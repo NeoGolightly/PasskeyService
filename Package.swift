@@ -13,7 +13,7 @@ let platforms: [PackageDescription.SupportedPlatform] = [.macOS(.v13)]
 
 let package = Package(
   name: "PasskeyService",
-  platforms: platforms,
+  platforms: [.macOS(.v13)],
   products: [
     // Products define the executables and libraries a package produces, making them visible to other packages.
     .library(
