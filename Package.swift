@@ -8,7 +8,7 @@ let platforms: [PackageDescription.SupportedPlatform] = [.macOS(.v13)]
 #elseif os(iOS)
 let platforms: [PackageDescription.SupportedPlatform] = [.iOS(.v18)]
 #else
-let platforms: [PackageDescription.SupportedPlatform]? = nil
+let platforms: [PackageDescription.SupportedPlatform] = [.macOS(.v13)]
 #endif
 
 let package = Package(
