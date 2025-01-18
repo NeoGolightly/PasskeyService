@@ -9,9 +9,7 @@ import Fluent
 
 
 public struct CreatePasskey: AsyncMigration {
-  public init(name: String) {
-    
-  }
+  public init() {}
   public func prepare(on database: Database) async throws {
     try await database.schema("passkeys")
       .field("id", .string)
