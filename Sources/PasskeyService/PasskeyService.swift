@@ -13,6 +13,7 @@ import Redis
 import RediStack
 
 
+
 public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
   private let redisExpirationInSeconds: Int = 60
   
@@ -20,6 +21,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
   
   @Sendable
   public func startSignup(req: Request) async throws -> StartSignupResponse {
+    print("startSignup")
     //
     let startSignupRequest = try req.query.decode(User.StartSignupRequest.self)
     // check if user already exists
@@ -41,22 +43,30 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
     
   @Sendable
   public func finishSignup(req: Request) async throws -> User.SignupResponse {
+    req.logger.trace("start finish signup")
     //
     let finishSignupRequest = try req.content.decode(FinishSignupRequest.self)
     //
+    req.logger.trace("find session")
     guard let signupSession = try await req.redis.get(RedisKey(finishSignupRequest.sessionID), asJSON: User.StartSignupRequest.SignupSession.self)
     else { throw Abort(.badRequest, reason: "Session id not correct") }
     //
+    req.logger.trace("get challenge")
     guard let challenge = Data(base64Encoded: signupSession.challange)
     else { throw Abort(.badRequest, reason: "Missing registration challenge") }
     //
+    req.logger.trace("check credential")
     let credential = try await req.webAuthn.finishRegistration(challenge: [UInt8](challenge),
                                                                credentialCreationData: finishSignupRequest.registrationCredential,
-                                                               confirmCredentialIDNotRegisteredYet: { _ in true})
+                                                               confirmCredentialIDNotRegisteredYet: { credentialID in
+      return try await Passkey<User>.query(on: req.db).filter(\.$id == credentialID).first() == nil
+    })
     //
+    req.logger.trace("create user")
     let user = User.create(from: signupSession, db: req.db)
     try await user.save(on: req.db)
     //
+    req.logger.trace("create passkey")
     try await Passkey<User>(
         id: credential.id,
         publicKey: credential.publicKey.base64URLEncodedString().asString(),
@@ -64,9 +74,11 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
         userID: user.requireID()
     ).save(on: req.db)
     //
+    req.logger.trace("create token")
     let token = try user.generateToken()
     try await token.save(on: req.db)
     //
+    req.logger.trace("create signup response")
     return user.createSignupResponse(accessToken: token.value)
   }
   
