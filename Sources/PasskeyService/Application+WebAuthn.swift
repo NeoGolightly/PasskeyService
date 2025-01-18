@@ -13,7 +13,7 @@ extension Application {
     typealias Value = WebAuthnManager
   }
   
-  var webAuthn: WebAuthnManager {
+  public var webAuthn: WebAuthnManager {
     get {
       guard let webAuthn = storage[WebAuthnKey.self] else {
         fatalError("WebAuthn is not configured. Use app.webAuthn = ...")
@@ -27,7 +27,7 @@ extension Application {
 }
 
 extension Request {
-  var webAuthn: WebAuthnManager { application.webAuthn }
+  public var webAuthn: WebAuthnManager { application.webAuthn }
 }
 
 

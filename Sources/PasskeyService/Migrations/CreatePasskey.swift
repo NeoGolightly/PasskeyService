@@ -7,8 +7,9 @@
 
 import Fluent
 
-struct CreatePasskey: AsyncMigration {
-  func prepare(on database: Database) async throws {
+
+public struct CreatePasskey: AsyncMigration {
+  public func prepare(on database: Database) async throws {
     try await database.schema("passkeys")
       .field("id", .string)
       .field("public_key", .string, .required)
@@ -17,7 +18,7 @@ struct CreatePasskey: AsyncMigration {
       .create()
   }
   
-  func revert(on database: Database) async throws {
+  public func revert(on database: Database) async throws {
     try await database.schema("passkeys").delete()
   }
 }

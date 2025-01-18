@@ -41,7 +41,7 @@ final class Passkey<U: UserType>: Model, @unchecked Sendable, PasskeyModelType  
   
   init() {}
   
-  init(id: String, publicKey: String, currentSignCount: Int32, userID: UUID) {
+  init(id: String, publicKey: String, currentSignCount: Int32, userID: User.IDValue) {
     self.id = id
     self.publicKey = publicKey
     self.currentSignCount = currentSignCount

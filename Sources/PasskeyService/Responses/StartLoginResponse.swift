@@ -8,10 +8,10 @@
 import Vapor
 import WebAuthn
 
-struct StartLoginResponse: AsyncResponseEncodable, Encodable {
+public struct StartLoginResponse: AsyncResponseEncodable, Encodable {
   let sessionID: String
   let credentialRequestOptions: PublicKeyCredentialRequestOptions
-  func encodeResponse(for request: Request) async throws -> Response {
+  public func encodeResponse(for request: Request) async throws -> Response {
     var headers = HTTPHeaders()
     headers.contentType = .json
     return try Response(status: .ok, headers: headers, body: .init(data: JSONEncoder().encode(self)))
