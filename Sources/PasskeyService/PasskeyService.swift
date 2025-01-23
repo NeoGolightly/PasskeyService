@@ -24,6 +24,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
     print("startSignup")
     //
     let startSignupRequest = try req.query.decode(User.StartSignupRequest.self)
+    print(startSignupRequest)
     // check if user already exists
     guard try await !User.userExistsFor(request: startSignupRequest, db: req.db)
     else { throw Abort(.conflict, reason: "User already taken.", identifier: "exists") }
@@ -35,6 +36,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
                                                                         displayName:  startSignupRequest.displayName)
     // create signup session
     let signupSession = startSignupRequest.makeSignupSession(challange: challange, userID: userID)
+    print(signupSession)
     //
     try await req.redis.setex(RedisKey(signupSession.id.uuidString), toJSON: signupSession, expirationInSeconds: redisExpirationInSeconds)
     //
@@ -59,7 +61,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
     let credential = try await req.webAuthn.finishRegistration(challenge: [UInt8](challenge),
                                                                credentialCreationData: finishSignupRequest.registrationCredential,
                                                                confirmCredentialIDNotRegisteredYet: { credentialID in
-      return try await Passkey<User>.query(on: req.db).filter(\.$id == credentialID).first() == nil
+      return try await PasskeyModel<User>.query(on: req.db).filter(\.$id == credentialID).first() == nil
     })
     //
     req.logger.trace("create user")
@@ -67,7 +69,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
     try await user.save(on: req.db)
     //
     req.logger.trace("create passkey")
-    try await Passkey<User>(
+    try await PasskeyModel<User>(
         id: credential.id,
         publicKey: credential.publicKey.base64URLEncodedString().asString(),
         currentSignCount: Int32(credential.signCount),
@@ -79,7 +81,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
     try await token.save(on: req.db)
     //
     req.logger.trace("create signup response")
-    return user.createSignupResponse(accessToken: token.value)
+    return try user.createSignupResponse(accessToken: token.value)
   }
   
   @Sendable
@@ -111,7 +113,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
         throw Abort(.badRequest, reason: "Missing registration challenge")
     }
     // find the credential the stranger claims to possess
-    guard let credential = try await Passkey<User>.query(on: req.db)
+    guard let credential = try await PasskeyModel<User>.query(on: req.db)
       .filter(\.$id == finishLoginRequest.authenticationCredential.id.urlDecoded.asString())
       .with(\.$user)
       .first() else {
@@ -130,7 +132,7 @@ public struct PasskeyService<User: UserType, Token: TokenType>: Sendable {
     let token = try credential.user.generateToken()
     try await token.save(on: req.db)
     //
-    return credential.user.createLoginResponse(accessToken: token.value)
+    return try credential.user.createLoginResponse(accessToken: token.value)
   }
 }
 

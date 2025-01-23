@@ -22,13 +22,13 @@ protocol PasskeyModelType: Model {
 }
 
 
-final class Passkey<U: UserType>: Model, @unchecked Sendable, PasskeyModelType  {
+public final class PasskeyModel<U: UserType>: Model, @unchecked Sendable, PasskeyModelType  {
   typealias User = U
   
-  static var schema: String { "passkeys" }
+  public static var schema: String { "passkeys" }
   
   @ID(custom: "id", generatedBy: .user)
-  var id: String?
+  public var id: String?
   
   @Field(key: "public_key")
   var publicKey: String
@@ -39,7 +39,7 @@ final class Passkey<U: UserType>: Model, @unchecked Sendable, PasskeyModelType  
   @Parent(key: "user_id")
   var user: User
   
-  init() {}
+  public init() {}
   
   init(id: String, publicKey: String, currentSignCount: Int32, userID: User.IDValue) {
     self.id = id

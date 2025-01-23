@@ -20,6 +20,6 @@ public protocol UserType: Model where Self.IDValue == UUID {
   static func create(from session: StartSignupRequest.SignupSession, db: Database) -> Self
   
   func generateToken() throws -> Token
-  func createSignupResponse(accessToken: String) -> SignupResponse
-  func createLoginResponse(accessToken: String) -> LoginResponse
+  func createSignupResponse(accessToken: String) throws -> SignupResponse
+  func createLoginResponse(accessToken: String) throws -> LoginResponse
 }
