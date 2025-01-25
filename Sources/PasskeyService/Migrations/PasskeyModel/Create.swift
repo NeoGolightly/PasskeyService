@@ -13,6 +13,9 @@ extension PasskeyModel {
     public init() {
       
     }
+    public var name: String {
+      "passkeyModel_create"
+    }
     public func prepare(on database: Database) async throws {
       try await database.schema("passkeys")
         .field("id", .string)
