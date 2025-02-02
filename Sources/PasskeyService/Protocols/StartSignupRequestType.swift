@@ -6,8 +6,8 @@
 //
 
 import Foundation
-
-public protocol StartSignupRequestType: Codable {
+import Vapor
+public protocol StartSignupRequestType: Content {
   associatedtype SignupSession: SignupSessionType
   var name: String { get }
   var displayName: String { get }

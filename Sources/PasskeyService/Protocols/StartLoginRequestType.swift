@@ -6,8 +6,8 @@
 //
 
 import Foundation
-
-public protocol StartLoginRequestType: Codable {
+import Vapor
+public protocol StartLoginRequestType: Content {
   associatedtype LoginSession: LoginSessionType
   func makeLoginSession(challange: String, userID: UUID) -> LoginSession
 }
